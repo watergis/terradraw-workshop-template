@@ -9,9 +9,17 @@
 	} from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
+	import {
+		TerraDraw,
+		TerraDrawPointMode,
+		TerraDrawLineStringMode,
+		TerraDrawPolygonMode
+	} from 'terra-draw';
+	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
 	let mapContainer: HTMLDivElement | undefined = $state();
 	let map: Map | undefined = $state();
+	let draw: TerraDraw | undefined = $state();
 
 	onMount(() => {
 		if (!mapContainer) return;
@@ -54,12 +62,37 @@
 		);
 		map.addControl(new ScaleControl({ maxWidth: 80, unit: 'metric' }), 'bottom-left');
 		map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
+
+		draw = new TerraDraw({
+			// Using the MapLibre Adapter
+			adapter: new TerraDrawMapLibreGLAdapter({ map }),
+
+			// Add the Point, LineSdtring and Polygon Mode
+			modes: [new TerraDrawPointMode(), new TerraDrawLineStringMode(), new TerraDrawPolygonMode()]
+		});
+
+		map.once('load', () => {
+			// Start drawing
+			draw?.start();
+		});
 	});
+
+	const handleModeClick = (mode: string) => {
+		draw?.setMode(mode);
+	};
+
+	const handleClearClick = () => {
+		draw?.clear();
+	};
 </script>
 
 <div class="main">
 	<aside class="sidebar">
 		<!-- Use this space for adding additional elements for workshop -->
+		<button onclick={() => handleModeClick('point')}>Point</button>
+		<button onclick={() => handleModeClick('linestring')}>Line</button>
+		<button onclick={() => handleModeClick('polygon')}>Polygon</button>
+		<button onclick={handleClearClick}>Clear</button>
 	</aside>
 	<div class="map" bind:this={mapContainer}></div>
 </div>

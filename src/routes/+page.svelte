@@ -13,7 +13,8 @@
 		TerraDraw,
 		TerraDrawPointMode,
 		TerraDrawLineStringMode,
-		TerraDrawPolygonMode
+		TerraDrawPolygonMode,
+		TerraDrawSelectMode
 	} from 'terra-draw';
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
@@ -67,8 +68,44 @@
 			// Using the MapLibre Adapter
 			adapter: new TerraDrawMapLibreGLAdapter({ map }),
 
-			// Add the Point, LineSdtring and Polygon Mode
-			modes: [new TerraDrawPointMode(), new TerraDrawLineStringMode(), new TerraDrawPolygonMode()]
+			// Add the Point, LineString, Polygon and Select Mode
+			modes: [
+				new TerraDrawPointMode(),
+				new TerraDrawLineStringMode(),
+				new TerraDrawPolygonMode(),
+				// Add Select mode with feature and coordinate editing enabled
+				new TerraDrawSelectMode({
+					flags: {
+						point: {
+							feature: {
+								draggable: true
+							}
+						},
+						linestring: {
+							feature: {
+								draggable: true,
+								rotateable: true,
+								coordinates: {
+									midpoints: true,
+									draggable: true,
+									deletable: true
+								}
+							}
+						},
+						polygon: {
+							feature: {
+								draggable: true,
+								rotateable: true,
+								coordinates: {
+									midpoints: true,
+									draggable: true,
+									deletable: true
+								}
+							}
+						}
+					}
+				})
+			]
 		});
 
 		map.once('load', () => {
@@ -93,6 +130,10 @@
 		<button onclick={() => handleModeClick('linestring')}>Line</button>
 		<button onclick={() => handleModeClick('polygon')}>Polygon</button>
 		<button onclick={handleClearClick}>Clear</button>
+
+		<!-- Add select mode button here -->
+		<hr />
+		<button onclick={() => handleModeClick('select')}>Select</button>
 	</aside>
 	<div class="map" bind:this={mapContainer}></div>
 </div>

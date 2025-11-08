@@ -5,10 +5,12 @@
 		GlobeControl,
 		Map,
 		NavigationControl,
-		ScaleControl
+		ScaleControl,
 	} from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import 'maplibre-gl/dist/maplibre-gl.css';
+    import { TerraDraw, TerraDrawRectangleMode } from 'terra-draw'
+    import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
 	let mapContainer: HTMLDivElement | undefined = $state();
 	let map: Map | undefined = $state();
@@ -54,6 +56,20 @@
 		);
 		map.addControl(new ScaleControl({ maxWidth: 80, unit: 'metric' }), 'bottom-left');
 		map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
+
+        const draw = new TerraDraw({
+        // Using the MapLibre Adapter
+        adapter: new TerraDrawMapLibreGLAdapter({ map }),
+
+        // Add the Rectangle Mode
+        modes: [new TerraDrawRectangleMode()],
+        });
+
+        map.once('load', () => {
+            // Start drawing
+            draw.start();
+            draw.setMode("rectangle");
+        })
 	});
 </script>
 

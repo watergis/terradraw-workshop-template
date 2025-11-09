@@ -222,6 +222,21 @@
 				console.log(`deselected`);
 				selectedFeature = '';
 			});
+
+			// Add a default point feature at Auckland University of Technology
+			draw?.addFeatures([
+				{
+					id: '39d86739-6012-40ae-bb8c-3cb0f0694b92',
+					type: 'Feature',
+					geometry: {
+						type: 'Point',
+						coordinates: [174.766430366, -36.85309055]
+					},
+					properties: {
+						mode: 'point'
+					}
+				}
+			]);
 		});
 	});
 
@@ -231,6 +246,13 @@
 
 	const handleClearClick = () => {
 		draw?.clear();
+	};
+
+	const handleDeleteClick = () => {
+		const targetFeature = selectedFeature ? JSON.parse(selectedFeature) : null;
+		if (targetFeature && targetFeature.id) {
+			draw?.removeFeatures([targetFeature.id]);
+		}
 	};
 </script>
 
@@ -256,6 +278,10 @@
 			rows="10"
 			readonly
 		></textarea>
+
+		<!-- Add delete mode button here -->
+		<hr />
+		<button onclick={handleDeleteClick} disabled={!selectedFeature}>Delete</button>
 	</aside>
 	<div class="map" bind:this={mapContainer}></div>
 </div>

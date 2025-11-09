@@ -14,13 +14,16 @@
 		TerraDrawPointMode,
 		TerraDrawLineStringMode,
 		TerraDrawPolygonMode,
-		TerraDrawSelectMode
+		TerraDrawSelectMode,
+		TerraDrawExtend
 	} from 'terra-draw';
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
 	let mapContainer: HTMLDivElement | undefined = $state();
 	let map: Map | undefined = $state();
 	let draw: TerraDraw | undefined = $state();
+
+	let selectedFeature: string = $state('');
 
 	onMount(() => {
 		if (!mapContainer) return;
@@ -163,6 +166,62 @@
 		map.once('load', () => {
 			// Start drawing
 			draw?.start();
+
+			draw?.on('change', (ids, type) => {
+				if (!draw) return;
+				if (type === 'create') {
+					// After creating a feature
+					for (const id of ids) {
+						// Do something
+						console.log(`change: Feature created: ${id}`);
+					}
+				} else if (type === 'update') {
+					//After updating a feature
+					for (const id of ids) {
+						console.log(`change: Feature updated: ${id}`);
+					}
+				} else if (type === 'delete') {
+					//After deleting a feature
+					for (const id of ids) {
+						console.log(`change: Feature deleted: ${id}`);
+					}
+				} else if (type === 'styling') {
+					//After styling is changed
+					for (const id of ids) {
+						console.log(`change: Feature styling updated: ${id}`);
+					}
+				}
+			});
+
+			draw?.on(
+				'finish',
+				(id: TerraDrawExtend.FeatureId, context: { action: string; mode: string }) => {
+					if (context.action === 'draw') {
+						// Do something for draw finish event for a feature
+						console.log(`finish: Feature drawn: ${id} in mode: ${context.mode}`);
+					} else if (context.action === 'dragFeature') {
+						// Do something for a drag finish event for a feature
+						console.log(`finish: Feature dragged: ${id} in mode: ${context.mode}`);
+					} else if (context.action === 'dragCoordinate') {
+						// Do something for a drag finish event for a coordinate
+						console.log(`finish: Coordinate dragged in feature: ${id} in mode: ${context.mode}`);
+					} else if (context.action === 'dragCoordinateResize') {
+						// Do something for a drag finish event for resizing a feature
+						console.log(`finish: Coordinate resized in feature: ${id} in mode: ${context.mode}`);
+					}
+				}
+			);
+
+			draw?.on('select', (id: TerraDrawExtend.FeatureId) => {
+				console.log(`selected: ${id}`);
+				const feature = draw?.getSnapshotFeature(id);
+				selectedFeature = feature ? JSON.stringify(feature, null, 2) : '';
+			});
+
+			draw?.on('deselect', () => {
+				console.log(`deselected`);
+				selectedFeature = '';
+			});
 		});
 	});
 
@@ -186,6 +245,17 @@
 		<!-- Add select mode button here -->
 		<hr />
 		<button onclick={() => handleModeClick('select')}>Select</button>
+
+		<!-- Add text area for selected feature here -->
+		<hr />
+		<label for="selected-feature-geojson">Selected Feature GeoJSON:</label>
+		<textarea
+			id="selected-feature-geojson"
+			bind:value={selectedFeature}
+			style="width: 100%; resize: vertical;"
+			rows="10"
+			readonly
+		></textarea>
 	</aside>
 	<div class="map" bind:this={mapContainer}></div>
 </div>
